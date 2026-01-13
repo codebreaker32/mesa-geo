@@ -131,17 +131,17 @@ class TestRasterLayer(unittest.TestCase):
         2. cell.pos returns grid_pos and cell.indices returns rowcol.
         """
         cell = self.raster_layer.cells[0][0]
-        
+
         # Test deprecated 'pos'
         with self.assertWarns(FutureWarning):
             pos = cell.pos
         self.assertEqual(pos, cell.grid_pos)
-        
+
         # Test deprecated 'indices'
         with self.assertWarns(FutureWarning):
             indices = cell.indices
         self.assertEqual(indices, cell.rowcol)
-        
+
         # Test setter warning
         with self.assertWarns(FutureWarning):
             cell.pos = (10, 10)
@@ -159,7 +159,7 @@ class TestRasterLayer(unittest.TestCase):
         bl_cell = self.raster_layer.cells[0][0]
         self.assertEqual(bl_cell.grid_pos, (0, 0))
         self.assertEqual(bl_cell.rowcol, (2, 0))
-        
+
         # Transform logic: x_coord, y_coord = transform * (col + 0.5, row + 0.5)
         expected_x, expected_y = self.raster_layer.transform * (0.5, 2.5)
         self.assertAlmostEqual(bl_cell.xy[0], expected_x)
@@ -169,7 +169,7 @@ class TestRasterLayer(unittest.TestCase):
         tr_cell = self.raster_layer.cells[1][2]
         self.assertEqual(tr_cell.grid_pos, (1, 2))
         self.assertEqual(tr_cell.rowcol, (0, 1))
-        
+
         expected_x, expected_y = self.raster_layer.transform * (1.5, 0.5)
         self.assertAlmostEqual(tr_cell.xy[0], expected_x)
         self.assertAlmostEqual(tr_cell.xy[1], expected_y)
