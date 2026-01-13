@@ -27,7 +27,7 @@ class TestRasterLayer(unittest.TestCase):
 
     def test_apple_raster(self):
         raster_data = np.array([[[1, 2], [3, 4], [5, 6]]])
-        self.raster_layer.apply_raster(raster_data)
+        self.raster_layer.apply_raster(raster_data, attr_name="val")
         """
         (x, y) coordinates:
         (0, 2), (1, 2)
@@ -39,19 +39,19 @@ class TestRasterLayer(unittest.TestCase):
           [3, 4],
           [5, 6]]]
         """
-        self.assertEqual(self.raster_layer.cells[0][1].attribute_5, 3)
-        self.assertEqual(self.raster_layer.attributes, {"attribute_5"})
+        self.assertEqual(self.raster_layer.cells[0][1].val, 3)
+        self.assertEqual(self.raster_layer.attributes, {"val"})
 
         self.raster_layer.apply_raster(raster_data, attr_name="elevation")
         self.assertEqual(self.raster_layer.cells[0][1].elevation, 3)
-        self.assertEqual(self.raster_layer.attributes, {"attribute_5", "elevation"})
+        self.assertEqual(self.raster_layer.attributes, {"val", "elevation"})
 
         with self.assertRaises(ValueError):
             self.raster_layer.apply_raster(np.empty((1, 100, 100)))
 
     def test_get_raster(self):
         raster_data = np.array([[[1, 2], [3, 4], [5, 6]]])
-        self.raster_layer.apply_raster(raster_data)
+        self.raster_layer.apply_raster(raster_data, attr_name="val")
         """
         (x, y) coordinates:
         (0, 2), (1, 2)
@@ -69,8 +69,11 @@ class TestRasterLayer(unittest.TestCase):
         )
 
         self.raster_layer.apply_raster(raster_data)
+        # We expect 3 layers: val, elevation, and the new unnamed one.
+        # Since they are all identical raster_data, the order doesn't matter for equality check.
         np.testing.assert_array_equal(
-            self.raster_layer.get_raster(), np.concatenate((raster_data, raster_data))
+            self.raster_layer.get_raster(), 
+            np.concatenate((raster_data, raster_data, raster_data))
         )
         with self.assertRaises(ValueError):
             self.raster_layer.get_raster("not_existing_attr")
@@ -84,7 +87,7 @@ class TestRasterLayer(unittest.TestCase):
             self.raster_layer.get_neighboring_cells(pos=(0, 2), moore=True),
             key=lambda cell: cell.elevation,
         )
-        self.assertEqual(min_cell.pos, (1, 2))
+        self.assertEqual(min_cell.grid_pos, (1, 2))
         self.assertEqual(min_cell.elevation, 2)
 
         min_cell = min(
@@ -93,7 +96,7 @@ class TestRasterLayer(unittest.TestCase):
             ),
             key=lambda cell: cell.elevation,
         )
-        self.assertEqual(min_cell.pos, (0, 2))
+        self.assertEqual(min_cell.grid_pos, (0, 2))
         self.assertEqual(min_cell.elevation, 1)
 
         self.raster_layer.apply_raster(
@@ -105,7 +108,7 @@ class TestRasterLayer(unittest.TestCase):
             ),
             key=lambda cell: cell.elevation + cell.water_level,
         )
-        self.assertEqual(min_cell.pos, (0, 2))
+        self.assertEqual(min_cell.grid_pos, (0, 2))
         self.assertEqual(min_cell.elevation, 1)
         self.assertEqual(min_cell.water_level, 1)
 
@@ -118,5 +121,5 @@ class TestRasterLayer(unittest.TestCase):
             self.raster_layer.get_neighboring_cells(pos=(0, 2), moore=True),
             key=lambda cell: cell.elevation,
         )
-        self.assertEqual(max_cell.pos, (1, 1))
+        self.assertEqual(max_cell.grid_pos, (1, 1))
         self.assertEqual(max_cell.elevation, 4)
