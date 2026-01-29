@@ -25,7 +25,7 @@ class TestRasterLayer(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_apple_raster(self):
+    def test_apply_raster(self):
         raster_data = np.array([[[1, 2], [3, 4], [5, 6]]])
         self.raster_layer.apply_raster(raster_data, attr_name="val")
         """
